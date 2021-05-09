@@ -1,0 +1,60 @@
+#Работа с openweathermap для изучения JSON и REST API
+
+import requests
+
+# Запрос к сайту, чтобы узнать информацию об id города по названию
+# http://api.openweathermap.org/data/2.5/find?q=Moscow,RU&APPID=ddf2b6d9895517e9e700f687e0e0fe86
+s_city = "Moscow, RU"
+appid = 'ddf2b6d9895517e9e700f687e0e0fe86'
+
+res = requests.get("https://api.openweathermap.org/data/2.5/find",
+                   params={'q': s_city, 'type': 'like', 'units': 'metric', 'appid': appid})
+data = res.json()
+print("Город:", s_city)
+city_id = data['list'][0]['id']
+print('city_id=', city_id)
+lat = data['list'][0]['coord']['lat']
+lon = data['list'][0]['coord']['lon']
+print('Координаты:', lat, lon)
+
+# запрос на данные о давлении
+# http://api.openweathermap.org/data/2.5/forecast?q=Moscow,RU&APPID=ddf2b6d9895517e9e700f687e0e0fe86
+res = requests.get("http://api.openweathermap.org/data/2.5/forecast",
+                   params={'id': city_id, 'units': 'metric', 'lang': 'ru', 'appid': appid})
+data = res.json()
+
+# Выбираем наибольшее значение давления
+pressure_max = 0
+for i in data['list']:
+    pressure = i['main']['pressure']
+    if pressure >= pressure_max:
+        pressure_max = pressure
+print("Максимальное давление за 5 дней:", pressure_max, "мм рт.ст.")
+
+res = requests.get(
+    "https://openweathermap.org/data/2.5/onecall?lat=55.7522&lon=37.6156&units=metric&appid=439d4b804bc8187953eb36d2a8c26a02"
+)
+data = res.json()
+# Наименьшая разница в градусах по модулю
+min_diff = 100
+for i in data["daily"]:
+    diff = abs(i["temp"]['night'] - i["temp"]['morn'])
+
+    if min_diff > diff:
+        min_diff = diff
+print('Минимальная разница между температурой:', min_diff, 'градусов цельсия')
+
+
+
+import requests
+from xml.dom.minidom import parseString
+
+
+page = requests.get(
+    'http://www.cbr.ru/scripts/XML_daily.asp').text
+xmldoc = parseString(page)
+JPY = xmldoc.getElementsByTagName('Value')[33]
+
+print ('Курс йены к рублю =', JPY.firstChild.nodeValue)
+ 
+
